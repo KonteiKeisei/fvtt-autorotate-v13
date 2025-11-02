@@ -151,23 +151,37 @@ async function rotateTokensOnTarget(user, targetToken, targetActive) {
 }
 
 
-// Updated for V13 ApplicationV2 compatibility
+// V13-specific implementation using ApplicationV2 patterns
 async function injectAutoRotateOptions(app, html, data){
     const enabled = data.object.flags[core.MODULE_SCOPE]?.["enabled"]
     const offset = data.object.flags[core.MODULE_SCOPE]?.["offset"]
 
-    // V13 uses ApplicationV2, so we need to wait for the DOM to be fully rendered
-    // and use a more robust selector
-    const form = html.find("fieldset.appearance, div[data-tab='appearance'], .tab[data-tab='appearance']").first();
+    console.log("AutoRotate: renderTokenConfig hook fired");
+    console.log("AutoRotate: html element", html);
+    console.log("AutoRotate: data structure", data);
 
-    if (form.length === 0) {
-        // Fallback: try to find any appearance-related container
-        console.warn("AutoRotate: Could not find appearance tab, trying fallback selector");
-        const fallback = html.find(".tab.active").first();
-        if (fallback.length === 0) {
-            console.error("AutoRotate: Could not inject settings - no suitable container found");
-            return;
+    // Try multiple selectors for V13 compatibility
+    let form = null;
+    const selectors = [
+        "fieldset.appearance",                  // V13 fieldset approach
+        ".tab[data-tab='appearance']",          // Tab-based approach
+        "div[data-tab='appearance']",           // Old V11 approach
+        ".window-content form",                 // Generic form
+        "form fieldset:last-of-type",           // Last fieldset in form
+    ];
+
+    for (const selector of selectors) {
+        form = html.find(selector).first();
+        if (form.length > 0) {
+            console.log(`AutoRotate: Found target using selector: ${selector}`);
+            break;
         }
+    }
+
+    if (!form || form.length === 0) {
+        console.error("AutoRotate: Could not find suitable injection point");
+        console.log("AutoRotate: Available elements:", html.find("*").map((i, el) => el.tagName + (el.className ? '.' + el.className : '')).get());
+        return;
     }
 
     let snippet = await renderTemplate(
@@ -180,9 +194,9 @@ async function injectAutoRotateOptions(app, html, data){
         }
     );
 
-    // In V13, we may need to append to a different location
-    const targetElement = form.length > 0 ? form : html.find("form").first();
-    targetElement.append(snippet);
+    // Append the snippet
+    form.append(snippet);
+    console.log("AutoRotate: Settings injected successfully");
 }
 
 Hooks.on("preUpdateToken",    rotateTokenOnPreUpdate);

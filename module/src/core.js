@@ -17,7 +17,7 @@ export function setSetting(key, value){
 export function registerSetting(key, value, link){
     const typ = value.type;
     if (value?.type?.prototype instanceof FormApplication) {
-        return game.settings.registerMenu(MODULE_SCOPE, key, value);       
+        return game.settings.registerMenu(MODULE_SCOPE, key, value);
     }
 
     const originalOnChange = value.onChange;
