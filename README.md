@@ -1,3 +1,7 @@
+# V13 Update Fork
+This fork is something i put together for my own games. I am not a mod author, nor even remotely good at this, but incase otherse needed it, i wanted to make it available.
+I will likely be unable to support any issues found, nor am i responsible for any issues encountered when using this fork.
+
 # Auto-Rotate
 Auto-Rotate is a FoundryVTT module which allows tokens to automatically rotate based on triggers such as movement, targeting, etc.
 
